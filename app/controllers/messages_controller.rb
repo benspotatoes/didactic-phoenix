@@ -1,12 +1,18 @@
 class MessagesController < ApplicationController
+  skip_before_filter :verify_authenticity_token
+
   def index
-    Message.all.order('timestamp desc')
+    @messages = Message.all.order('timestamp asc')
   end
 
   def create
-    params.each do |k,v|
-      puts "#{k}: #{v}"
-    end
+    message_params = params.symbolize_keys
+    message_params.delete(:action)
+    message_params.delete(:controller)
+
+    Message.create!(message_params)
+
+    render text: nil
   end
 
   def realtime
