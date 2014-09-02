@@ -27,6 +27,8 @@ gem 'coffee-rails', '~> 4.0.0'
 gem 'haml'
 gem 'haml-rails'
 
+gem 'clearance'
+
 group :production do
   gem 'thin'
   gem 'pg'

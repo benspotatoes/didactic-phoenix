@@ -1,6 +1,8 @@
 class MessagesController < ApplicationController
   skip_before_filter :verify_authenticity_token
 
+  before_filter :authorize, only: [:index]
+
   def index
     @messages = Message.all.order('timestamp asc')
   end
