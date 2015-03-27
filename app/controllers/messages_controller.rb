@@ -14,6 +14,11 @@ class MessagesController < ApplicationController
   end
 
   def create
+    if params['token'] != ENV['TOKEN']
+      render status: :bad_request
+      return
+    end
+
     message_params = params.symbolize_keys
     message_params.delete(:action)
     message_params.delete(:controller)
