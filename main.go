@@ -52,7 +52,7 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
     }
     db.MustExec(
       `INSERT INTO messages(token,team_id,team_domain,channel_id,channel_name,timestamp,user_id,user_name,text,trigger_word,service_id,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13);`,
-      parsed.Get("Token"), parsed.Get("TeamID"), parsed.Get("TeamDomain"), parsed.Get("ChannelID"), parsed.Get("ChannelName"), parsed.Get("Timestamp"), parsed.Get("UserID"), parsed.Get("UserName"), parsed.Get("Text"), parsed.Get("TriggerWord"), parsed.Get("ServiceID"), time.Now(), time.Now())
+      parsed.Get("token"), parsed.Get("team_id"), parsed.Get("team_domain"), parsed.Get("channel_id"), parsed.Get("channel_name"), parsed.Get("timestamp"), parsed.Get("user_id"), parsed.Get("user_name"), parsed.Get("text"), parsed.Get("trigger_word"), parsed.Get("service_id"), time.Now(), time.Now())
     defer db.Close()
     w.WriteHeader(http.StatusOK)
   }
