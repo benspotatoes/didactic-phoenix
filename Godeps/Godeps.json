@@ -1,0 +1,24 @@
+{
+	"ImportPath": "github.com/benspotatoes/slack-history",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "94903de8c98a68d8b4483c529b26a5d146e386a2"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx",
+			"Comment": "sqlx-v1.1-15-g23a7b78",
+			"Rev": "23a7b787ffc1205098c38f534c4bf3764ae7b713"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-47-g93e9980",
+			"Rev": "93e9980741c9e593411b94e07d5bad8cfb4809db"
+		}
+	]
+}
