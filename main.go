@@ -47,7 +47,7 @@ func main() {
   r := mux.NewRouter()
   r.HandleFunc("/", PingHandler)
   r.HandleFunc("/message", MessageHandler)
-  r.HandleFunc("/query", QueryHandler)
+  // r.HandleFunc("/query", QueryHandler)
   r.HandleFunc("/search", SearchHandler)
 
   log.Fatal(http.ListenAndServe(os.Getenv("PORT"), r))
