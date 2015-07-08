@@ -8,6 +8,7 @@ import (
 
   // Webserver dependencies
   "net/http"
+  "encoding/json"
   "github.com/gorilla/mux"
 
   // Database dependencies
@@ -18,10 +19,29 @@ import (
   "net/url"
 )
 
+type QueryRequest struct {
+  Field string `json:"field"`
+  Query string `json:"query"`
+}
+
+type QueryResp struct {
+  Messages []Message `json:"messages"`
+}
+
+type Message struct {
+  ID int `db:"id"`
+  ChannelName string `db:"channel_name"`
+  Timestamp string `db:"timestamp"`
+  UserName string `db:"user_name"`
+  Text string `db:"text"`
+  TeamDomain string `db:"team_domain"`
+}
+
 func main() {
   r := mux.NewRouter()
   r.HandleFunc("/", PingHandler)
   r.HandleFunc("/message", MessageHandler)
+  r.HandleFunc("/query", QueryHandler)
 
   log.Fatal(http.ListenAndServe(os.Getenv("PORT"), r))
 }
@@ -56,4 +76,47 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
     defer db.Close()
     w.WriteHeader(http.StatusOK)
   }
+}
+
+func QueryHandler(w http.ResponseWriter, r *http.Request) {
+  var queryReq QueryRequest
+
+  decoder := json.NewDecoder(r.Body)
+  err := decoder.Decode(&queryReq)
+  if err != nil {
+    w.WriteHeader(http.StatusBadRequest)
+    fmt.Fprintf(w, err.Error())
+    return
+  }
+
+  db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO"))
+  if err != nil {
+    panic(err)
+  }
+  // db = db.Unsafe()
+
+  messages := []Message{}
+  query := fmt.Sprintf("SELECT id,channel_name,timestamp,user_name,text,team_domain FROM messages WHERE %s LIKE '%s';", queryReq.Field, "%%" + queryReq.Query + "%%")
+  if os.Getenv("DEBUG") == "true" {
+    fmt.Printf(query)
+  }
+
+  err = db.Select(&messages, query)
+  if err != nil {
+    w.WriteHeader(http.StatusInternalServerError)
+    fmt.Fprintf(w, err.Error())
+    return
+  }
+
+  messageResp := QueryResp{Messages: messages}
+
+  resp, err := json.Marshal(messageResp)
+  if err != nil {
+    w.WriteHeader(http.StatusInternalServerError)
+    fmt.Fprintf(w, err.Error())
+    return
+  }
+
+  w.WriteHeader(http.StatusOK)
+  w.Write(resp)
 }
