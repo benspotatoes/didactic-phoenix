@@ -141,13 +141,13 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
   if parsed.Get("token") != os.Getenv("SEARCH_TOKEN") {
     w.WriteHeader(http.StatusBadRequest)
   } else {
-    db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO"))
+    db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("channel_name")))
     if err != nil {
       panic(err)
     }
     
     results := []Result{}
-    query := fmt.Sprintf("SELECT user_name,text FROM messages WHERE text LIKE '%s' LIMIT 10;", "%%" + parsed.Get("text") + "%%")
+    query := fmt.Sprintf("SELECT user_name,text FROM messages WHERE text LIKE '%s' ORDER BY id desc LIMIT 10;", "%%" + parsed.Get("text") + "%%")
     if os.Getenv("DEBUG") == "true" {
       fmt.Printf(query)
     }
