@@ -5,6 +5,7 @@ import (
   "log"
   "fmt"
   "time"
+  "strings"
 
   // Webserver dependencies
   "net/http"
@@ -69,7 +70,7 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
 
   w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-  if parsed.Get("token") != os.Getenv("TOKEN") {
+  if !strings.Contains(os.Getenv("MESSAGE_TOKEN"), parsed.Get("token")) {
     w.WriteHeader(http.StatusBadRequest)
   } else {
     db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("channel_name")))
@@ -99,7 +100,6 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     panic(err)
   }
-  // db = db.Unsafe()
 
   messages := []Message{}
   query := fmt.Sprintf("SELECT id,channel_name,timestamp,user_name,text,team_domain FROM messages WHERE %s LIKE '%s';", queryReq.Field, "%%" + queryReq.Query + "%%")
@@ -138,14 +138,14 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
     panic(err)
   }
 
-  if parsed.Get("token") != os.Getenv("SEARCH_TOKEN") {
+  if !strings.Contains(os.Getenv("SEARCH_TOKEN"), parsed.Get("token")) {
     w.WriteHeader(http.StatusBadRequest)
   } else {
     db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("channel_name")))
     if err != nil {
       panic(err)
     }
-    
+
     results := []Result{}
     query := fmt.Sprintf("SELECT user_name,text FROM messages WHERE text LIKE '%s' ORDER BY id desc LIMIT 10;", "%%" + parsed.Get("text") + "%%")
     if os.Getenv("DEBUG") == "true" {
@@ -163,7 +163,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
     for _, res := range results {
       resp = resp + fmt.Sprintf("%s: %s;\n", res.UserName, res.Text)
     }
-    
+
     w.Write([]byte(resp))
   }
 }
