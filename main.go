@@ -37,11 +37,17 @@ type Message struct {
   TeamDomain string `db:"team_domain"`
 }
 
+type Result struct {
+  UserName string `db:"user_name"`
+  Text string `db:"text"`
+}
+
 func main() {
   r := mux.NewRouter()
   r.HandleFunc("/", PingHandler)
   r.HandleFunc("/message", MessageHandler)
   r.HandleFunc("/query", QueryHandler)
+  r.HandleFunc("/search", SearchHandler)
 
   log.Fatal(http.ListenAndServe(os.Getenv("PORT"), r))
 }
@@ -119,4 +125,45 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 
   w.WriteHeader(http.StatusOK)
   w.Write(resp)
+}
+
+func SearchHandler(w http.ResponseWriter, r *http.Request) {
+  body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+  if err != nil {
+    panic(err)
+  }
+
+  parsed, err := url.ParseQuery(string(body))
+  if err != nil {
+    panic(err)
+  }
+
+  if parsed.Get("token") != os.Getenv("SEARCH_TOKEN") {
+    w.WriteHeader(http.StatusBadRequest)
+  } else {
+    db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO"))
+    if err != nil {
+      panic(err)
+    }
+    
+    results := []Result{}
+    query := fmt.Sprintf("SELECT user_name,text FROM messages WHERE text LIKE '%s' LIMIT 10;", "%%" + parsed.Get("text") + "%%")
+    if os.Getenv("DEBUG") == "true" {
+      fmt.Printf(query)
+    }
+
+    err = db.Select(&results, query)
+    if err != nil {
+      w.WriteHeader(http.StatusInternalServerError)
+      fmt.Fprintf(w, err.Error())
+      return
+    }
+
+    resp := ""
+    for _, res := range results {
+      resp = resp + fmt.Sprintf("%s: %s;\n", res.UserName, res.Text)
+    }
+    
+    w.Write([]byte(resp))
+  }
 }
