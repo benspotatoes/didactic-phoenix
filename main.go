@@ -182,7 +182,7 @@ func HistoryHandler(w http.ResponseWriter, r *http.Request) {
     panic(err)
   }
 
-  if !strings.Contains(os.Getenv("SEARCH_TOKEN"), parsed.Get("token")) {
+  if !strings.Contains(os.Getenv("HISTORY_TOKEN"), parsed.Get("token")) {
     w.WriteHeader(http.StatusBadRequest)
   } else {
     db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("channel_name")))
