@@ -5,6 +5,8 @@ import (
   "log"
   "fmt"
   "time"
+  "regexp"
+  "strconv"
   "strings"
 
   // Webserver dependencies
@@ -49,6 +51,7 @@ func main() {
   r.HandleFunc("/message", MessageHandler)
   // r.HandleFunc("/query", QueryHandler)
   r.HandleFunc("/search", SearchHandler)
+  r.HandleFunc("/history", HistoryHandler)
 
   log.Fatal(http.ListenAndServe(os.Getenv("PORT"), r))
 }
@@ -148,6 +151,64 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 
     results := []Result{}
     query := fmt.Sprintf("SELECT user_name,text FROM messages WHERE text LIKE '%s' ORDER BY id desc LIMIT 10;", "%%" + parsed.Get("text") + "%%")
+    if os.Getenv("DEBUG") == "true" {
+      fmt.Printf(query)
+    }
+
+    err = db.Select(&results, query)
+    if err != nil {
+      w.WriteHeader(http.StatusInternalServerError)
+      fmt.Fprintf(w, err.Error())
+      return
+    }
+
+    resp := ""
+    for _, res := range results {
+      resp = resp + fmt.Sprintf("%s: %s;\n", res.UserName, res.Text)
+    }
+
+    w.Write([]byte(resp))
+  }
+}
+
+func HistoryHandler(w http.ResponseWriter, r *http.Request) {
+  body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+  if err != nil {
+    panic(err)
+  }
+
+  parsed, err := url.ParseQuery(string(body))
+  if err != nil {
+    panic(err)
+  }
+
+  if !strings.Contains(os.Getenv("SEARCH_TOKEN"), parsed.Get("token")) {
+    w.WriteHeader(http.StatusBadRequest)
+  } else {
+    db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("channel_name")))
+    if err != nil {
+      panic(err)
+    }
+
+    command := parsed.Get("text")
+    limitRegex, _ := regexp.Compile("limit:([0-9]+) ")
+    offsetRegex, _ := regexp.Compile("offset:([0-9]+) ")
+
+    limitVal := limitRegex.FindStringSubmatch(command)
+    offsetVal := offsetRegex.FindStringSubmatch(command)
+
+    limit := 50
+    offset := 0
+
+    if limitVal != nil {
+      limit, _ = strconv.Atoi(limitVal[1])
+    }
+    if offsetVal != nil {
+      offset, _ = strconv.Atoi(offsetVal[1])
+    }
+
+    results := []Result{}
+    query := fmt.Sprintf("SELECT user_name,text FROM messages ORDER BY id desc LIMIT %d OFFSET %d;", limit, offset)
     if os.Getenv("DEBUG") == "true" {
       fmt.Printf(query)
     }
