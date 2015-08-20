@@ -191,8 +191,8 @@ func HistoryHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     command := parsed.Get("text")
-    limitRegex, _ := regexp.Compile("limit:([0-9]+) ")
-    offsetRegex, _ := regexp.Compile("offset:([0-9]+) ")
+    limitRegex, _ := regexp.Compile("limit:([0-9]+)\\s?")
+    offsetRegex, _ := regexp.Compile("offset:([0-9]+)\\s?")
 
     limitVal := limitRegex.FindStringSubmatch(command)
     offsetVal := offsetRegex.FindStringSubmatch(command)
