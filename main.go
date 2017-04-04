@@ -76,7 +76,7 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
   if !strings.Contains(os.Getenv("MESSAGE_TOKEN"), parsed.Get("token")) {
     w.WriteHeader(http.StatusBadRequest)
   } else {
-    db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("channel_name")))
+    db, err := sqlx.Connect("postgres", os.Getenv("DB_INFO") + fmt.Sprintf(" dbname=%s", parsed.Get("team_domain")))
     if err != nil {
       panic(err)
     }
