@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -ex
+
+if [ -z "$1" ]
+then
+  echo 'Missing organization name'
+  exit 1
+fi
+
+if [ -z "$2" ]
+then
+  echo 'Missing bucket name'
+  exit 1
+fi
+
+NOW=$(date +%s)
+FILENAME="$1.$NOW.dump"
+FILEPATH="/tmp/$FILENAME"
+
+pg_dump -t "$1.messages" historislack > $FILEPATH
+gsutil mv $FILEPATH "gs://$2/$FILE_NAME"
