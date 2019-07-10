@@ -32,7 +32,7 @@ ARG bucket=""
 RUN rm /etc/crontabs/root
 
 RUN for org in $organizations; do \
-  echo "0 0 * * 1 root /opt/historislack/export $org $bucket" >> /etc/crontabs/root \
+  echo "0 0 * * 1 root /opt/historislack/export $org $bucket" >> /etc/crontabs/root; \
   done
 
 CMD ["crond", "-f", "-d", "8"]
