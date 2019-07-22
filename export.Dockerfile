@@ -24,7 +24,7 @@ RUN apk --no-cache add \
   gcloud config set metrics/environment github_docker_image && \
   gcloud --version
 
-COPY opt/historislack /opt/
+COPY opt/ /opt/
 
 ARG organizations=""
 ARG bucket=""

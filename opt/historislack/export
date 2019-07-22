@@ -18,5 +18,5 @@ NOW=$(date +%s)
 FILENAME="$1.$NOW.dump"
 FILEPATH="/tmp/$FILENAME"
 
-pg_dump -t "$1.messages" historislack > $FILEPATH
+pg_dump -h historislack -U historislack -t "$1.messages" historislack > $FILEPATH
 gsutil mv $FILEPATH "gs://$2/$FILE_NAME"
