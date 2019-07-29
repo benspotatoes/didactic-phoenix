@@ -1,0 +1,13 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build',
+    '--build-arg', 'organizations=${_ORGANIZATIONS}',
+    '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME',
+    '.']
+
+images:
+- 'gcr.io/$PROJECT_ID/$REPO_NAME'
+
+substitutions:
+  _ORGANIZATIONS: default
