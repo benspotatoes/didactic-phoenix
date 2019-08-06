@@ -3,6 +3,7 @@ steps:
   args: [
     'build',
     '--build-arg', 'organizations=${_ORGANIZATIONS}',
+    '--build-arg', 'bucket=${_BUCKET}',
     '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME-export',
     '-f', 'export.Dockerfile',
     '.']
@@ -12,3 +13,4 @@ images:
 
 substitutions:
   _ORGANIZATIONS: default
+  _BUCKET: default
